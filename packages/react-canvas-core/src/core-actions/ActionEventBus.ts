@@ -38,7 +38,7 @@ export class ActionEventBus {
 		});
 	}
 
-	getModelForEvent(actionEvent: ActionEvent): BaseModel {
+	getModelForEvent(actionEvent: any): BaseModel {
 		if (actionEvent.model) {
 			return actionEvent.model;
 		}

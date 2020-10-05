@@ -38,7 +38,7 @@ export class DragDiagramItemsState extends MoveItemsState<DiagramEngine> {
 		this.registerAction(
 			new Action({
 				type: InputType.TOUCH_END,
-				fire: (event: ActionEvent<TouchEvent>) => {
+				fire: (event: any) => {
 					const item = this.engine.getMouseElement(event.event);
 					if (item instanceof PortModel) {
 						_.forEach(this.initialPositions, position => {

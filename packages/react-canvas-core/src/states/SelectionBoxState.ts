@@ -25,7 +25,7 @@ export class SelectionBoxState extends AbstractDisplacementState {
 		this.engine.repaintCanvas();
 	}
 
-	getBoxDimensions(event: AbstractDisplacementStateEvent): ClientRect {
+	getBoxDimensions(event: any): ClientRect {
 		const rel = this.engine.getRelativePoint(event.event.clientX, event.event.clientY);
 
 		return {
