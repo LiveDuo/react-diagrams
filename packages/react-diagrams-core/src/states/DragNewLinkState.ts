@@ -6,7 +6,7 @@ import {
 	InputType
 } from '@projectstorm/react-canvas-core';
 import { PortModel } from '../entities/port/PortModel';
-import { MouseEvent } from 'react';
+import { MouseEvent, TouchEvent } from 'react';
 import { LinkModel } from '../entities/link/LinkModel';
 import { DiagramEngine } from '../DiagramEngine';
 
@@ -62,9 +62,61 @@ export class DragNewLinkState extends AbstractDisplacementState<DiagramEngine> {
 
 		this.registerAction(
 			new Action({
+				type: InputType.TOUCH_START,
+				fire: (event: ActionEvent<TouchEvent, PortModel>) => {
+					this.port = this.engine.getTouchElement(event.event) as PortModel;
+
+					if (!this.config.allowLinksFromLockedPorts && this.port.isLocked()) {
+						this.eject();
+						return;
+					}
+					this.link = this.port.createLinkModel();
+
+					// if no link is given, just eject the state
+					if (!this.link) {
+						this.eject();
+						return;
+					}
+					this.link.setSelected(true);
+					this.link.setSourcePort(this.port);
+					this.engine.getModel().addLink(this.link);
+					this.port.reportPosition();
+				}
+			})
+		);
+
+		this.registerAction(
+			new Action({
 				type: InputType.MOUSE_UP,
 				fire: (event: ActionEvent<MouseEvent>) => {
 					const model = this.engine.getMouseElement(event.event);
+					// check to see if we connected to a new port
+					if (model instanceof PortModel) {
+						if (this.port.canLinkToPort(model)) {
+							this.link.setTargetPort(model);
+							model.reportPosition();
+							this.engine.repaintCanvas();
+							return;
+						} else {
+							this.link.remove();
+							this.engine.repaintCanvas();
+							return;
+						}
+					}
+
+					if (!this.config.allowLooseLinks) {
+						this.link.remove();
+						this.engine.repaintCanvas();
+					}
+				}
+			})
+		);
+
+		this.registerAction(
+			new Action({
+				type: InputType.TOUCH_END,
+				fire: (event: ActionEvent<TouchEvent>) => {
+					const model = this.engine.getTouchElement(event.event);
 					// check to see if we connected to a new port
 					if (model instanceof PortModel) {
 						if (this.port.canLinkToPort(model)) {
